@@ -93,25 +93,29 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
+    # Check if the start state is the goal state, if so return an empty list
+    if problem.isGoalState(problem.getStartState):
+        return []
+
     frontier = util.Stack()
     frontier.push(PathNode(problem.getStartState()))
     visited = set()
     while not frontier.isEmpty():
-        curTrip = frontier.pop()
-        if problem.isGoalState(curTrip.node):
-            ret = [curTrip.action]
-            while curTrip.parent:
-                if curTrip.parent.action:
-                    ret.append(curTrip.parent.action)
-                curTrip = curTrip.parent
-            ret.reverse()
-            return ret
-        visited.add(curTrip.node)
-        found = False
-        for (successor, action, _) in problem.getSuccessors(curTrip.node):
+        curNode = frontier.pop()
+        visited.add(curNode.node)
+        for (successor, action, _) in problem.getSuccessors(curNode.node):
             if successor not in visited:
-                found = True
-                frontier.push(PathNode(successor, action, curTrip))
+                childNode = PathNode(successor, action, curNode)
+                # Check if nodes are goal states before adding them to the frontier
+                if problem.isGoalState(childNode.node):
+                    ret = [childNode.action]
+                    while childNode.parent:
+                        if childNode.parent.action:
+                            ret.append(childNode.parent.action)
+                        childNode = childNode.parent
+                    ret.reverse()
+                    return ret
+                frontier.push(childNode)
 
 
 def breadthFirstSearch(problem):
@@ -119,51 +123,58 @@ def breadthFirstSearch(problem):
     search algorithm needs to return a list of actions that 
     reaches the goal.
     """
+    # Check if the start state is the goal state, if so return an empty list
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
     frontier = util.Queue()
     frontier.push(PathNode(problem.getStartState()))
     visited = set()
     while not frontier.isEmpty():
-        curTrip = frontier.pop()
-        if problem.isGoalState(curTrip.node):
-            ret = [curTrip.action]
-            while curTrip.parent:
-                if curTrip.parent.action:
-                    ret.append(curTrip.parent.action)
-                curTrip = curTrip.parent
-            ret.reverse()
-            return ret
-        visited.add(curTrip.node)
-        found = False
-        for (successor, action, _) in problem.getSuccessors(curTrip.node):
+        curNode = frontier.pop()
+        visited.add(curNode.node)
+        for (successor, action, _) in problem.getSuccessors(curNode.node):
             if successor not in visited:
-                found = True
-                frontier.push(PathNode(successor, action, curTrip))
+                childNode = PathNode(successor, action, curNode)
+                # Check if nodes are goal states before adding them to the frontier
+                if problem.isGoalState(childNode.node):
+                    ret = [childNode.action]
+                    while childNode.parent:
+                        if childNode.parent.action:
+                            ret.append(childNode.parent.action)
+                        childNode = childNode.parent
+                    ret.reverse()
+                    return ret
+                frontier.push(childNode)
 
 def uniformCostSearch(problem):
     """Your UCS implementation goes here. Like for DFS, your 
     search algorithm needs to return a list of actions that 
     reaches the goal.
     """
+    # Check if the start state is the goal state, if so return an empty list
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
     frontier = util.PriorityQueue()
     frontier.push(PathNode(problem.getStartState()), 0)
     visited = set()
     while not frontier.isEmpty():
-        curTrip = frontier.pop()
-        if problem.isGoalState(curTrip.node):
-            ret = [curTrip.action]
-            while curTrip.parent:
-                if curTrip.parent.action:
-                    ret.append(curTrip.parent.action)
-                curTrip = curTrip.parent
+        curNode = frontier.pop()
+        # Check if nodes are goal states when we pop them off the frontier
+        if problem.isGoalState(curNode.node):
+            ret = [curNode.action]
+            while curNode.parent:
+                if curNode.parent.action:
+                    ret.append(curNode.parent.action)
+                curNode = curNode.parent
             ret.reverse()
             return ret
-        visited.add(curTrip.node)
-        found = False
-        for (successor, action, _) in problem.getSuccessors(curTrip.node):
+        visited.add(curNode.node)
+        for (successor, action, _) in problem.getSuccessors(curNode.node):
             if successor not in visited:
-                found = True
                 newCost = problem.getCostOfActions([action])
-                frontier.push(PathNode(successor, action=action, parent=curTrip, cost=curTrip.cost+newCost), newCost)
+                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
 
 def nullHeuristic(state, problem=None):
     """
