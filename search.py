@@ -94,6 +94,13 @@ def depthFirstSearch(problem):
         node = frontier.pop()
         if problem.isGoalState(node):
             return actions.list
+        visited.add(node)
+        for (successor, action, _) in problem.getSuccessors(node):
+            if successor not in visited:
+                frontier.push(successor)
+                actions.push(action)
+        else:
+            actions.pop()
 
 def breadthFirstSearch(problem):
     """Your BFS implementation goes here. Like for DFS, your 
