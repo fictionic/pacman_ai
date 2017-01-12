@@ -73,10 +73,11 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 class PathNode:
-    def __init__(self, node, action=None, parent=None):
+    def __init__(self, node, action=None, parent=None, cost=0):
         self.node = node
         self.action = action
         self.parent = parent
+        self.cost = cost
 
 def depthFirstSearch(problem):
     """
@@ -143,7 +144,26 @@ def uniformCostSearch(problem):
     search algorithm needs to return a list of actions that 
     reaches the goal.
     """
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push(PathNode(problem.getStartState()), 0)
+    visited = set()
+    while not frontier.isEmpty():
+        curTrip = frontier.pop()
+        if problem.isGoalState(curTrip.node):
+            ret = [curTrip.action]
+            while curTrip.parent:
+                if curTrip.parent.action:
+                    ret.append(curTrip.parent.action)
+                curTrip = curTrip.parent
+            ret.reverse()
+            return ret
+        visited.add(curTrip.node)
+        found = False
+        for (successor, action, _) in problem.getSuccessors(curTrip.node):
+            if successor not in visited:
+                found = True
+                newCost = problem.getCostOfActions([action])
+                frontier.push(PathNode(successor, action=action, parent=curTrip, cost=curTrip.cost+newCost), newCost)
 
 def nullHeuristic(state, problem=None):
     """
