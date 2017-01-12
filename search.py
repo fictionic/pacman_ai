@@ -72,7 +72,7 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-class Triple:
+class PathNode:
     def __init__(self, node, action=None, parent=None):
         self.node = node
         self.action = action
@@ -93,7 +93,7 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     frontier = util.Stack()
-    frontier.push(Triple(problem.getStartState()))
+    frontier.push(PathNode(problem.getStartState()))
     visited = set()
     while not frontier.isEmpty():
         curTrip = frontier.pop()
@@ -110,7 +110,7 @@ def depthFirstSearch(problem):
         for (successor, action, _) in problem.getSuccessors(curTrip.node):
             if successor not in visited:
                 found = True
-                frontier.push(Triple(successor, action, curTrip))
+                frontier.push(PathNode(successor, action, curTrip))
 
 
 def breadthFirstSearch(problem):
@@ -119,7 +119,7 @@ def breadthFirstSearch(problem):
     reaches the goal.
     """
     frontier = util.Queue()
-    frontier.push(Triple(problem.getStartState()))
+    frontier.push(PathNode(problem.getStartState()))
     visited = set()
     while not frontier.isEmpty():
         curTrip = frontier.pop()
@@ -136,7 +136,7 @@ def breadthFirstSearch(problem):
         for (successor, action, _) in problem.getSuccessors(curTrip.node):
             if successor not in visited:
                 found = True
-                frontier.push(Triple(successor, action, curTrip))
+                frontier.push(PathNode(successor, action, curTrip))
 
 def uniformCostSearch(problem):
     """Your UCS implementation goes here. Like for DFS, your 
