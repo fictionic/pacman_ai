@@ -86,8 +86,14 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.Stack()
+    frontier.push(problem.getStartState())
+    visited = set()
+    actions = util.Stack()
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        if problem.isGoalState(node):
+            return actions.list
 
 def breadthFirstSearch(problem):
     """Your BFS implementation goes here. Like for DFS, your 
