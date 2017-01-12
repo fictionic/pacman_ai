@@ -72,6 +72,12 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+class Triple:
+    def __init__(self, node, action=None, parent=None):
+        self.node = node
+        self.action = action
+        self.parent = parent
+
 def depthFirstSearch(problem):
     """
     Your DFS implementation goes here
@@ -87,28 +93,33 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     frontier = util.Stack()
-    frontier.push(problem.getStartState())
+    frontier.push(Triple(problem.getStartState()))
     visited = set()
-    actions = util.Stack()
     while not frontier.isEmpty():
-        node = frontier.pop()
-        if problem.isGoalState(node):
-            return actions.list
-        visited.add(node)
-        for (successor, action, _) in problem.getSuccessors(node):
+        curTrip = frontier.pop()
+        print 'node: ' + str(curTrip.node)
+        if problem.isGoalState(curTrip.node):
+            ret = [curTrip.action]
+            while curTrip.parent:
+                if curTrip.parent.action:
+                    ret.append(curTrip.parent.action)
+                curTrip = curTrip.parent
+            ret.reverse()
+            return ret
+        visited.add(curTrip.node)
+        found = False
+        for (successor, action, _) in problem.getSuccessors(curTrip.node):
             if successor not in visited:
-                frontier.push(successor)
-                actions.push(action)
-        else:
-            actions.pop()
+                found = True
+                print 'successor: ' + str(successor) + ', action: ' + str(action)
+                frontier.push(Triple(successor, action, curTrip))
+
 
 def breadthFirstSearch(problem):
     """Your BFS implementation goes here. Like for DFS, your 
     search algorithm needs to return a list of actions that 
     reaches the goal.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Your UCS implementation goes here. Like for DFS, your 
