@@ -97,7 +97,6 @@ def depthFirstSearch(problem):
     visited = set()
     while not frontier.isEmpty():
         curTrip = frontier.pop()
-        print 'node: ' + str(curTrip.node)
         if problem.isGoalState(curTrip.node):
             ret = [curTrip.action]
             while curTrip.parent:
@@ -111,7 +110,6 @@ def depthFirstSearch(problem):
         for (successor, action, _) in problem.getSuccessors(curTrip.node):
             if successor not in visited:
                 found = True
-                print 'successor: ' + str(successor) + ', action: ' + str(action)
                 frontier.push(Triple(successor, action, curTrip))
 
 
@@ -120,6 +118,25 @@ def breadthFirstSearch(problem):
     search algorithm needs to return a list of actions that 
     reaches the goal.
     """
+    frontier = util.Queue()
+    frontier.push(Triple(problem.getStartState()))
+    visited = set()
+    while not frontier.isEmpty():
+        curTrip = frontier.pop()
+        if problem.isGoalState(curTrip.node):
+            ret = [curTrip.action]
+            while curTrip.parent:
+                if curTrip.parent.action:
+                    ret.append(curTrip.parent.action)
+                curTrip = curTrip.parent
+            ret.reverse()
+            return ret
+        visited.add(curTrip.node)
+        found = False
+        for (successor, action, _) in problem.getSuccessors(curTrip.node):
+            if successor not in visited:
+                found = True
+                frontier.push(Triple(successor, action, curTrip))
 
 def uniformCostSearch(problem):
     """Your UCS implementation goes here. Like for DFS, your 
