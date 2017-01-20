@@ -410,6 +410,8 @@ class CornersProblem(search.SearchProblem):
             if not hitsWall:
                 position = (nextx, nexty)
                 newCornersLeft = []
+                # Add all the corners that haven't been visited yet, unless the agent
+                # is at one of the corners
                 for corner in state[1]:
                     if position != corner:
                         newCornersLeft.append(corner)
@@ -552,7 +554,7 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-
+    '''
     # Finds the maximum distance to any food in the grid and the number of food
     # items left, then returns the maximum of the two
     position, foodGrid = state
@@ -566,7 +568,33 @@ def foodHeuristic(state, problem):
     if numLeft > maxDist:
         return numLeft
     else:
-        return maxDist
+        return maxDist'''
+
+    # Calculate the manhattan distances between each of the food and every other food
+    # Then use prim's algorithm (with starting node agent's position) to find a
+    # minimum spanning tree, and use this as the heuristic
+
+    position, foodGrid = state
+    foodList = foodGrid.asList()
+
+    # Create a minimum spanning tree starting with the agent
+    tree = [position]
+    others = foodList
+    mstDist = 0
+    # add nodes until there are none left to add
+    while len(others) > 0:
+        minDist = 99999999
+        minOther = None
+        for treeNode in tree:
+            for otherNode in others:
+                distance = manhattanDistance(treeNode[0], treeNode[1], otherNode[0], otherNode[1])
+                if distance < minDist:
+                    minDist = distance
+                    minOther = otherNode
+        mstDist += minDist
+        tree.append(minOther)
+        others.remove(minOther)
+    return mstDist
 
 
 class ClosestDotSearchAgent(SearchAgent):
