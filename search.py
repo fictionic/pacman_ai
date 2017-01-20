@@ -101,19 +101,19 @@ def depthFirstSearch(problem):
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
+        # Check if nodes are goal states before adding them to the frontier
+        if problem.isGoalState(curNode.node):
+            ret = [curNode.action]
+            while curNode.parent:
+                if curNode.parent.action:
+                    ret.append(curNode.parent.action)
+                curNode = curNode.parent
+            ret.reverse()
+            return ret
         visited.add(curNode.node)
         for (successor, action, _) in problem.getSuccessors(curNode.node):
             if successor not in visited:
                 childNode = PathNode(successor, action, curNode)
-                # Check if nodes are goal states before adding them to the frontier
-                if problem.isGoalState(childNode.node):
-                    ret = [childNode.action]
-                    while childNode.parent:
-                        if childNode.parent.action:
-                            ret.append(childNode.parent.action)
-                        childNode = childNode.parent
-                    ret.reverse()
-                    return ret
                 frontier.push(childNode)
 
 
