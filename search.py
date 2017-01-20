@@ -73,11 +73,22 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 class PathNode:
-    def __init__(self, node, action=None, parent=None, cost=0):
-        self.node = node
+    def __init__(self, state, action=None, parent=None, cost=0):
+        self.state = state
         self.action = action
         self.parent = parent
         self.cost = cost
+    def getPath(self):
+        node = self
+        ret = [node.action]
+        while node.parent:
+            if node.parent.action:
+                ret.append(node.parent.action)
+            node = node.parent
+        ret.reverse()
+        return ret
+    def __repr__(self):
+        return self.state.__repr__()
 
 def depthFirstSearch(problem):
     """
@@ -93,25 +104,16 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    # Check if the start state is the goal state, if so return an empty list
-    if problem.isGoalState(problem.getStartState()):
-        return []
     frontier = util.Stack()
     frontier.push(PathNode(problem.getStartState()))
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
         # Check if nodes are goal states before adding them to the frontier
-        if problem.isGoalState(curNode.node):
-            ret = [curNode.action]
-            while curNode.parent:
-                if curNode.parent.action:
-                    ret.append(curNode.parent.action)
-                curNode = curNode.parent
-            ret.reverse()
-            return ret
-        visited.add(curNode.node)
-        for (successor, action, _) in problem.getSuccessors(curNode.node):
+        if problem.isGoalState(curNode.state):
+            return curNode.getPath()
+        visited.add(curNode.state)
+        for (successor, action, _) in problem.getSuccessors(curNode.state):
             if successor not in visited:
                 childNode = PathNode(successor, action, curNode)
                 frontier.push(childNode)
@@ -123,26 +125,22 @@ def breadthFirstSearch(problem):
     reaches the goal.
     """
     # Check if the start state is the goal state, if so return an empty list
-    if problem.isGoalState(problem.getStartState()):
+    startState = problem.getStartState()
+    if problem.isGoalState(startState):
         return []
     frontier = util.Queue()
-    frontier.push(PathNode(problem.getStartState()))
+    frontier.push(PathNode(startState))
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
-        visited.add(curNode.node)
-        for (successor, action, _) in problem.getSuccessors(curNode.node):
+        visited.add(curNode.state)
+        # print frontier.list
+        for (successor, action, _) in problem.getSuccessors(curNode.state):
             if successor not in visited:
                 childNode = PathNode(successor, action, curNode)
                 # Check if nodes are goal states before adding them to the frontier
-                if problem.isGoalState(childNode.node):
-                    ret = [childNode.action]
-                    while childNode.parent:
-                        if childNode.parent.action:
-                            ret.append(childNode.parent.action)
-                        childNode = childNode.parent
-                    ret.reverse()
-                    return ret
+                if problem.isGoalState(childNode.state):
+                    return childNode.getPath()
                 frontier.push(childNode)
 
 def uniformCostSearch(problem):
@@ -150,27 +148,18 @@ def uniformCostSearch(problem):
     search algorithm needs to return a list of actions that 
     reaches the goal.
     """
-    # Check if the start state is the goal state, if so return an empty list
-    if problem.isGoalState(problem.getStartState()):
-        return []
     frontier = util.PriorityQueue()
     frontier.push(PathNode(problem.getStartState()), 0)
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
         # Check if nodes are goal states when we pop them off the frontier
-        if problem.isGoalState(curNode.node):
-            ret = [curNode.action]
-            while curNode.parent:
-                if curNode.parent.action:
-                    ret.append(curNode.parent.action)
-                curNode = curNode.parent
-            ret.reverse()
-            return ret
-        visited.add(curNode.node)
-        for (successor, action, _) in problem.getSuccessors(curNode.node):
+        if problem.isGoalState(curNode.state):
+            return curNode.getPath()
+        visited.add(curNode.state)
+        print len(visited)
+        for (successor, action, newCost) in problem.getSuccessors(curNode.state):
             if successor not in visited:
-                newCost = problem.getCostOfActions([action])
                 frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
 
 def nullHeuristic(state, problem=None):
@@ -197,7 +186,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while not frontier.isEmpty():
         curNode = frontier.pop()
         # Check if nodes are goal states when we pop them off the frontier
-        if problem.isGoalState(curNode.node):
+        if problem.isGoalState(curNode.state):
             ret = [curNode.action]
             while curNode.parent:
                 if curNode.parent.action:
@@ -205,8 +194,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 curNode = curNode.parent
             ret.reverse()
             return ret
-        visited.add(curNode.node)
-        for (successor, action, _) in problem.getSuccessors(curNode.node):
+        visited.add(curNode.state)
+        for (successor, action, _) in problem.getSuccessors(curNode.state):
             if successor not in visited:
                 newCost = problem.getCostOfActions([action]) + heuristic(successor, problem)
                 frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
