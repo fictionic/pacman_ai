@@ -96,7 +96,6 @@ def depthFirstSearch(problem):
     # Check if the start state is the goal state, if so return an empty list
     if problem.isGoalState(problem.getStartState):
         return []
-
     frontier = util.Stack()
     frontier.push(PathNode(problem.getStartState()))
     visited = set()
@@ -126,7 +125,6 @@ def breadthFirstSearch(problem):
     # Check if the start state is the goal state, if so return an empty list
     if problem.isGoalState(problem.getStartState()):
         return []
-
     frontier = util.Queue()
     frontier.push(PathNode(problem.getStartState()))
     visited = set()
@@ -155,10 +153,8 @@ def uniformCostSearch(problem):
     # Check if the start state is the goal state, if so return an empty list
     if problem.isGoalState(problem.getStartState()):
         return []
-
     frontier = util.PriorityQueue()
     frontier.push(PathNode(problem.getStartState()), 0)
-    visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
         # Check if nodes are goal states when we pop them off the frontier
@@ -170,11 +166,9 @@ def uniformCostSearch(problem):
                 curNode = curNode.parent
             ret.reverse()
             return ret
-        visited.add(curNode.node)
         for (successor, action, _) in problem.getSuccessors(curNode.node):
-            if successor not in visited:
-                newCost = problem.getCostOfActions([action])
-                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
+            newCost = problem.getCostOfActions([action])
+            frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
 
 def nullHeuristic(state, problem=None):
     """
