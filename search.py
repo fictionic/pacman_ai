@@ -94,7 +94,7 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     # Check if the start state is the goal state, if so return an empty list
-    if problem.isGoalState(problem.getStartState):
+    if problem.isGoalState(problem.getStartState()):
         return []
     frontier = util.Stack()
     frontier.push(PathNode(problem.getStartState()))
