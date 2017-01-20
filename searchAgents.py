@@ -449,7 +449,7 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    # Find the maximum distance between the pacman and a corner then return that
+    # Find the maximum distance between the pacman and a remainin corner then return that
     position, cornersLeft = state
     maxDist = 0
     for corner in cornersLeft:
