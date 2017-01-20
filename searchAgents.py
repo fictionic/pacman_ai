@@ -376,9 +376,6 @@ class CornersProblem(search.SearchProblem):
             if not startingGameState.hasFood(*corner):
                 print 'Warning: no food in corner ' + str(corner)
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
-        # Please add any code here which you would like to use
-        # in initializing the problem
-        "*** YOUR CODE HERE ***"
 
     def getStartState(self):
         """
@@ -452,18 +449,16 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    remainingCorners = state[1]
     # Find the minimum maze distance to the nearest node, add distance
     # between the rest of the nodes
+    position, cornersLeft = state
+    maxDist = 0
+    for corner in cornersLeft:
+        dist = manhattanDistance(position[0], position[1], corner[0], corner[1])
+        if dist > maxDist:
+            maxDist = dist
+    return maxDist
 
-    minMdist = 999999999
-    xy1 = state[0]
-
-    for xy2 in state[1]:
-        dist = len(search.dfs(PositionSearchProblemB(walls, start=xy1, goal=xy2, warn=False, visualize=False)))
-        if dist < minMdist:
-            minMdist = dist
-    return
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -527,6 +522,9 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
+def manhattanDistance(x1, y1, x2, y2):
+    return abs(x1-x2) + abs(y1-y2)
+
 def foodHeuristic(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -555,8 +553,6 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    def manhattanDistance(x1, y1, x2, y2):
-        return abs(x1-x2) + abs(y1-y2)
 
     position, foodGrid = state
     maxDist = 0
