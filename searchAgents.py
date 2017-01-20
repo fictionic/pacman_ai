@@ -226,97 +226,6 @@ class PositionSearchProblem(search.SearchProblem):
             cost += self.costFn((x,y))
         return cost
 
-class PositionSearchProblemB(search.SearchProblem):
-    """
-    A search problem defines the state space, start state, goal test, successor
-    function and cost function.  This search problem can be used to find paths
-    to a particular point on the pacman board.
-
-    The state space consists of (x,y) positions in a pacman game.
-
-    Note: this search problem is fully specified; you should NOT change it.
-    """
-
-    def __init__(self, walls, costFn = lambda x: 1, goal=(1,1), start=None, warn=True, visualize=True):
-        """
-        Stores the start and goal.
-
-        gameState: A GameState object (pacman.py)
-        costFn: A function from a search state (tuple) to a non-negative number
-        goal: A position in the gameState
-        """
-        self.walls = walls
-        if start != None: self.startState = start
-        self.goal = goal
-        self.costFn = costFn
-        self.visualize = visualize
-
-        # For display purposes
-        self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
-
-    def getStartState(self):
-        return self.startState
-
-    def isGoalState(self, state):
-        isGoal = state == self.goal
-
-        # For display purposes only
-        if isGoal and self.visualize:
-            self._visitedlist.append(state)
-            import __main__
-            if '_display' in dir(__main__):
-                if 'drawExpandedCells' in dir(__main__._display): #@UndefinedVariable
-                    __main__._display.drawExpandedCells(self._visitedlist) #@UndefinedVariable
-
-        return isGoal
-
-    def getSuccessors(self, state):
-        """
-        Returns successor states, the actions they require, and a cost of 1.
-
-         As noted in search.py:
-             For a given state, this should return a list of triples,
-         (successor, action, stepCost), where 'successor' is a
-         successor to the current state, 'action' is the action
-         required to get there, and 'stepCost' is the incremental
-         cost of expanding to that successor
-        """
-
-        successors = []
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            x,y = state
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            if not self.walls[nextx][nexty]:
-                nextState = (nextx, nexty)
-                cost = self.costFn(nextState)
-                successors.append( ( nextState, action, cost) )
-
-        # Bookkeeping for display purposes
-        self._expanded += 1 # DO NOT CHANGE
-        if state not in self._visited:
-            self._visited[state] = True
-            self._visitedlist.append(state)
-
-        return successors
-
-    def getCostOfActions(self, actions):
-        """
-        Returns the cost of a particular sequence of actions. If those actions
-        include an illegal move, return 999999.
-        """
-        if actions == None: return 999999
-        x,y= self.getStartState()
-        cost = 0
-        for action in actions:
-            # Check figure out the next state and see whether its' legal
-            dx, dy = Actions.directionToVector(action)
-            x, y = int(x + dx), int(y + dy)
-            if self.walls[x][y]: return 999999
-            cost += self.costFn((x,y))
-        return cost
-
-
 class StayEastSearchAgent(SearchAgent):
     """
     An agent for position search with a cost function that penalizes being in
@@ -402,22 +311,20 @@ class CornersProblem(search.SearchProblem):
         """
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            x,y = state[0]
+            x,y = state[0] # pacman's current location
             dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
+            newPosition = (int(x + dx), int(y + dy)) # location pacman will end up after taking action
             hitsWall = self.walls[nextx][nexty]
+            # only return legal successors
             if not hitsWall:
-                position = (nextx, nexty)
+                # add all the corners that both haven't been visited yet
+                # and that pacman wouldn't end up at after taking the given action
                 newCornersLeft = []
-                # Add all the corners that haven't been visited yet, unless the agent
-                # is at one of the corners
                 for corner in state[1]:
-                    if position != corner:
+                    if newPosition != corner:
                         newCornersLeft.append(corner)
-                successor = (position, tuple(newCornersLeft))
+                successor = (newPosition, tuple(newCornersLeft)) # successor state
                 successors.append((successor, action, 1))
-
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -451,7 +358,8 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    # Find the maximum distance between the pacman and a remaining corner then return that
+    # return the distance between pacman and the remaining corner
+    # that is farthest from pacman manhattan-wise
     position, cornersLeft = state
     maxDist = 0
     for corner in cornersLeft:
@@ -523,6 +431,8 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
+# helper function for various heuristics.
+# don't know why it wasn't provided for us.
 def manhattanDistance(x1, y1, x2, y2):
     return abs(x1-x2) + abs(y1-y2)
 
@@ -619,12 +529,8 @@ class ClosestDotSearchAgent(SearchAgent):
         Returns a path (a list of actions) to the closest dot, starting from
         gameState.
         """
-        # Here are some useful elements of the startState
-        startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        walls = gameState.getWalls()
-        problem = AnyFoodSearchProblem(gameState)
-        return search.bfs(problem)
+        # return shortest path to any food
+        return search.bfs(AnyFoodSearchProblem(gameState))
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
