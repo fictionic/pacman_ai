@@ -190,8 +190,29 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     you can see an example of the arguments and return type
     in "nullHeuristic", above.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Check if the start state is the goal state, if so return an empty list
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    frontier = util.PriorityQueue()
+    frontier.push(PathNode(problem.getStartState()), heuristic(problem.getStartState(), problem))
+    visited = set()
+    while not frontier.isEmpty():
+        curNode = frontier.pop()
+        # Check if nodes are goal states when we pop them off the frontier
+        if problem.isGoalState(curNode.node):
+            ret = [curNode.action]
+            while curNode.parent:
+                if curNode.parent.action:
+                    ret.append(curNode.parent.action)
+                curNode = curNode.parent
+            ret.reverse()
+            return ret
+        visited.add(curNode.node)
+        for (successor, action, _) in problem.getSuccessors(curNode.node):
+            if successor not in visited:
+                newCost = problem.getCostOfActions([action]) + heuristic(successor, problem)
+                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
 
 
 # Abbreviations
