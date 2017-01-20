@@ -273,6 +273,11 @@ class CornersProblem(search.SearchProblem):
     You must select a suitable state space and successor function
     """
 
+    class State:
+        def __init__(self, position, cornersLeft):
+            self.position = position
+            self.cornersLeft = cornersLeft
+
     def __init__(self, startingGameState):
         """
         Stores the walls, pacman's starting position and corners.
@@ -294,15 +299,13 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return CornersProblem.State(self.startingPosition, set(self.corners))
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return len(state.cornersLeft) == 0
 
     def getSuccessors(self, state):
         """
@@ -318,13 +321,18 @@ class CornersProblem(search.SearchProblem):
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-
-            "*** YOUR CODE HERE ***"
+            x,y = state.position
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                position = (nextx, nexty)
+                print position, state.cornersLeft
+                successor = CornersProblem.State(position, set())
+                for x,y in self.corners:
+                    if not x == nextx or not y == nexty:
+                        successor.cornersLeft.add((x,y))
+                successors.append((successor, action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
