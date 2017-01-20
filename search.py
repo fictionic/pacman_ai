@@ -109,7 +109,9 @@ def depthFirstSearch(problem):
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
-        # Check if nodes are goal states before adding them to the frontier
+        if curNode.state in visited:
+            continue
+        # Check if nodes are goal states when we pop them off the frontier
         if problem.isGoalState(curNode.state):
             return curNode.getPath()
         visited.add(curNode.state)
@@ -133,6 +135,8 @@ def breadthFirstSearch(problem):
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
+        if curNode.state in visited:
+            continue
         visited.add(curNode.state)
         # print frontier.list
         for (successor, action, _) in problem.getSuccessors(curNode.state):
@@ -159,9 +163,9 @@ def uniformCostSearch(problem):
         if problem.isGoalState(curNode.state):
             return curNode.getPath()
         visited.add(curNode.state)
-        for (successor, action, newCost) in problem.getSuccessors(curNode.state):
+        for (successor, action, edgeCost) in problem.getSuccessors(curNode.state):
             if successor not in visited:
-                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), curNode.cost+newCost)
+                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+edgeCost), curNode.cost+edgeCost)
 
 def nullHeuristic(state, problem=None):
     """
@@ -177,29 +181,23 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     you can see an example of the arguments and return type
     in "nullHeuristic", above.
     """
-    # Check if the start state is the goal state, if so return an empty list
-    if problem.isGoalState(problem.getStartState()):
-        return []
-
     frontier = util.PriorityQueue()
     frontier.push(PathNode(problem.getStartState()), heuristic(problem.getStartState(), problem))
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
+        if curNode.state in visited:
+            continue
         # Check if nodes are goal states when we pop them off the frontier
         if problem.isGoalState(curNode.state):
-            ret = [curNode.action]
-            while curNode.parent:
-                if curNode.parent.action:
-                    ret.append(curNode.parent.action)
-                curNode = curNode.parent
-            ret.reverse()
-            return ret
+            return curNode.getPath()
         visited.add(curNode.state)
-        for (successor, action, _) in problem.getSuccessors(curNode.state):
+        for (successor, action, edgeCost) in problem.getSuccessors(curNode.state):
             if successor not in visited:
-                newCost = problem.getCostOfActions([action]) + heuristic(successor, problem)
-                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
+                g = curNode.cost + edgeCost
+                h = heuristic(successor, problem)
+                f = g + h
+                frontier.push(PathNode(successor, action=action, parent=curNode, cost=g), f)
 
 
 # Abbreviations

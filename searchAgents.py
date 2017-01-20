@@ -413,9 +413,9 @@ class CornersProblem(search.SearchProblem):
             if not hitsWall:
                 position = (nextx, nexty)
                 newCornersLeft = []
-                for (x,y) in state[1]:
-                    if (x,y) != state[0]:
-                        newCornersLeft.append((x,y))
+                for corner in state[1]:
+                    if position != corner:
+                        newCornersLeft.append(corner)
                 successor = (position, tuple(newCornersLeft))
                 successors.append((successor, action, 1))
 
