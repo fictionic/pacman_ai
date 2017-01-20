@@ -554,25 +554,12 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    '''
-    # Finds the maximum distance to any food in the grid and the number of food
-    # items left, then returns the maximum of the two
-    position, foodGrid = state
-    foodList = foodGrid.asList()
-    numLeft = len(foodList)
-    maxDist = 0
-    for food in foodList:
-        dist = manhattanDistance(position[0], position[1], food[0], food[1])
-        if dist > maxDist:
-            maxDist = dist
-    if numLeft > maxDist:
-        return numLeft
-    else:
-        return maxDist'''
 
-    # Calculate the manhattan distances between each of the food and every other food
-    # Then use prim's algorithm (with starting node agent's position) to find a
-    # minimum spanning tree, and use this as the heuristic
+    """
+    Calculate the manhattan distances between each of the food and every other food,
+    then use prim's algorithm (with starting node agent's position) to find a
+    minimum spanning tree, and use this as the heuristic.
+    """
 
     position, foodGrid = state
     foodList = foodGrid.asList()
@@ -580,6 +567,7 @@ def foodHeuristic(state, problem):
     # Create a minimum spanning tree starting with the agent
     tree = [position]
     others = foodList
+    # keep track of the total length of the tree
     mstDist = 0
     # add nodes until there are none left to add
     while len(others) > 0:
@@ -587,13 +575,18 @@ def foodHeuristic(state, problem):
         minOther = None
         for treeNode in tree:
             for otherNode in others:
+                # calculate distances on the fly - it's a lot easier than other things
                 distance = manhattanDistance(treeNode[0], treeNode[1], otherNode[0], otherNode[1])
+                # keep track of the minimum distance between the tree and other nodes, as well
+                # as which node it is to
                 if distance < minDist:
                     minDist = distance
                     minOther = otherNode
         mstDist += minDist
+        # each node is either in the tree or out of the tree
         tree.append(minOther)
         others.remove(minOther)
+    # finally return the total length of the tree
     return mstDist
 
 
