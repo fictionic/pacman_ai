@@ -449,7 +449,7 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    # Find the maximum distance between the pacman and a remainin corner then return that
+    # Find the maximum distance between the pacman and a remaining corner then return that
     position, cornersLeft = state
     maxDist = 0
     for corner in cornersLeft:
@@ -553,6 +553,8 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
 
+    # Finds the maximum distance to any food in the grid and the number of food
+    # items left, then returns the maximum of the two
     position, foodGrid = state
     foodList = foodGrid.asList()
     numLeft = len(foodList)
@@ -564,7 +566,7 @@ def foodHeuristic(state, problem):
     if numLeft > maxDist:
         return numLeft
     else:
-        return maxDist + numLeft
+        return maxDist
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -627,6 +629,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
+        # For this problem, there is just one food, so we just check if the
+        # agent is at that location
         x,y = state
         return self.food[x][y]
 
