@@ -153,14 +153,15 @@ def uniformCostSearch(problem):
     visited = set()
     while not frontier.isEmpty():
         curNode = frontier.pop()
+        if curNode.state in visited:
+            continue
         # Check if nodes are goal states when we pop them off the frontier
         if problem.isGoalState(curNode.state):
             return curNode.getPath()
         visited.add(curNode.state)
-        print len(visited)
         for (successor, action, newCost) in problem.getSuccessors(curNode.state):
             if successor not in visited:
-                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), newCost)
+                frontier.push(PathNode(successor, action=action, parent=curNode, cost=curNode.cost+newCost), curNode.cost+newCost)
 
 def nullHeuristic(state, problem=None):
     """

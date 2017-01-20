@@ -226,6 +226,97 @@ class PositionSearchProblem(search.SearchProblem):
             cost += self.costFn((x,y))
         return cost
 
+class PositionSearchProblemB(search.SearchProblem):
+    """
+    A search problem defines the state space, start state, goal test, successor
+    function and cost function.  This search problem can be used to find paths
+    to a particular point on the pacman board.
+
+    The state space consists of (x,y) positions in a pacman game.
+
+    Note: this search problem is fully specified; you should NOT change it.
+    """
+
+    def __init__(self, walls, costFn = lambda x: 1, goal=(1,1), start=None, warn=True, visualize=True):
+        """
+        Stores the start and goal.
+
+        gameState: A GameState object (pacman.py)
+        costFn: A function from a search state (tuple) to a non-negative number
+        goal: A position in the gameState
+        """
+        self.walls = walls
+        if start != None: self.startState = start
+        self.goal = goal
+        self.costFn = costFn
+        self.visualize = visualize
+
+        # For display purposes
+        self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
+
+    def getStartState(self):
+        return self.startState
+
+    def isGoalState(self, state):
+        isGoal = state == self.goal
+
+        # For display purposes only
+        if isGoal and self.visualize:
+            self._visitedlist.append(state)
+            import __main__
+            if '_display' in dir(__main__):
+                if 'drawExpandedCells' in dir(__main__._display): #@UndefinedVariable
+                    __main__._display.drawExpandedCells(self._visitedlist) #@UndefinedVariable
+
+        return isGoal
+
+    def getSuccessors(self, state):
+        """
+        Returns successor states, the actions they require, and a cost of 1.
+
+         As noted in search.py:
+             For a given state, this should return a list of triples,
+         (successor, action, stepCost), where 'successor' is a
+         successor to the current state, 'action' is the action
+         required to get there, and 'stepCost' is the incremental
+         cost of expanding to that successor
+        """
+
+        successors = []
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            x,y = state
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                nextState = (nextx, nexty)
+                cost = self.costFn(nextState)
+                successors.append( ( nextState, action, cost) )
+
+        # Bookkeeping for display purposes
+        self._expanded += 1 # DO NOT CHANGE
+        if state not in self._visited:
+            self._visited[state] = True
+            self._visitedlist.append(state)
+
+        return successors
+
+    def getCostOfActions(self, actions):
+        """
+        Returns the cost of a particular sequence of actions. If those actions
+        include an illegal move, return 999999.
+        """
+        if actions == None: return 999999
+        x,y= self.getStartState()
+        cost = 0
+        for action in actions:
+            # Check figure out the next state and see whether its' legal
+            dx, dy = Actions.directionToVector(action)
+            x, y = int(x + dx), int(y + dy)
+            if self.walls[x][y]: return 999999
+            cost += self.costFn((x,y))
+        return cost
+
+
 class StayEastSearchAgent(SearchAgent):
     """
     An agent for position search with a cost function that penalizes being in
@@ -362,8 +453,18 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    remainingCorners = state[1]
+    # Find the minimum maze distance to the nearest node, add distance
+    # between the rest of the nodes
+
+    minMdist = 999999999
+    xy1 = state[0]
+
+    for xy2 in state[1]:
+        dist = len(search.dfs(PositionSearchProblemB(walls, start=xy1, goal=xy2, warn=False, visualize=False)))
+        if dist < minMdist:
+            minMdist = dist
+    return
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
