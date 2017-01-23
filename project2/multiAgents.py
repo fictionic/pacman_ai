@@ -98,6 +98,10 @@ class MultiAgentSearchAgent(Agent):
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
 
+def debug(s):
+    # print(s)
+    pass
+
 class MinimaxAgent(MultiAgentSearchAgent):
     """
       Your minimax agent (question 2)
@@ -120,9 +124,63 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if self.index == 0:
+            # we're pacman
+            return self.maxValueAction(0, gameState)[1]
+        else:
+            # we're a ghost
+            return self.minValueValue(self.index, gameState)[1]
 
+    def minValueAction(self, searchDepth, state):
+        func = self.maxValueAction if searchDepth - 1 % state.getNumAgents() == 0 else self.minValueAction
+        v = None
+        a = None
+        # if we've reached the max depth
+        if searchDepth == self.depth * state.getNumAgents():
+            return self.evaluationFunction(state), None
+        vs = []
+        debug('\t' * searchDepth + "min")
+        debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
+        for action in state.getLegalActions(self.index):
+            child = state.generateSuccessor(self.index, action)
+            childV = func(searchDepth+1, child)[0]
+            vs.append(childV)
+            debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
+            if not v or childV < v:
+                v = childV
+                a = action
+        debug('\t' * searchDepth + 'depth: ' + str(searchDepth))
+        debug('\t' * searchDepth +'vs: ' + str(vs))
+        debug('\t' * searchDepth +'v: ' + str(v))
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            v = self.evaluationFunction(state)
+        return v, a
+        
+    def maxValueAction(self, searchDepth, state):
+        v = None
+        a = None
+        vs = []
+        # if we've reached the max depth
+        if searchDepth == self.depth * state.getNumAgents():
+            return self.evaluationFunction(state), None
+        debug('\t' * searchDepth + "max")
+        debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
+        for action in state.getLegalActions(self.index):
+            child = state.generateSuccessor(self.index, action)
+            childV = self.minValueAction(searchDepth+1, child)[0]
+            if not v or childV > v:
+                v = childV
+                a = action
+            vs.append(childV)
+        debug('\t' * searchDepth +'depth: ' + str(searchDepth))
+        debug('\t' * searchDepth +'vs: ' + str(vs))
+        debug('\t' * searchDepth +'v: ' + str(v))
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            v = self.evaluationFunction(state)
+        return v, a
+        
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
@@ -134,6 +192,30 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
+
+    # def maxValueAction(self, searchDepth, state, alpha, beta):
+    #     if searchDepth > self.depth * state.getNumAgents():
+    #         return self.evaluationFunction(state), None
+    #     v = None
+    #     a = None
+    #     for action in state.getLegalActions(self.index):
+    #         child = state.generateSuccessor(self.index, action)
+    #         if not v:
+    #             v, a = self.minValueAction(searchDepth+1, child, alpha, beta)
+    #         else:
+    #             childV, childA = self.minValueAction(searchDepth+1, child, alpha, beta)
+    #             if childV > v:
+    #                 v = childV
+    #                 a = childA
+    #         if not beta or v > beta:
+    #             return v, action
+    #         alpha = max(v, alpha) if alpha else v
+    #     if not v:
+    #         v = self.evaluationFunction(state)
+    #     return v, a
+    #     
+
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
