@@ -17,6 +17,7 @@ from game import Directions
 import random, util
 
 from game import Agent
+import sys
 
 class ReflexAgent(Agent):
     """
@@ -190,8 +191,55 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        if self.index == 0:
+            # we're pacman
+            return self.maxValueAction(0, gameState, sys.maxint, -sys.maxint)[1]
+        else:
+            # we're a ghost
+            return self.minValueValue(self.index, gameState, None, None)[1]
+
+    def minValueAction(self, searchDepth, state, alpha, beta):
+        func = self.maxValueAction if searchDepth - 1 % state.getNumAgents() == 0 else self.minValueAction
+        v = None
+        a = None
+        # if we've reached the max depth
+        if searchDepth == self.depth * state.getNumAgents():
+            return self.evaluationFunction(state), None
+        for action in state.getLegalActions(self.index):
+            child = state.generateSuccessor(self.index, action)
+            childV = func(searchDepth + 1, child, alpha, beta)[0]
+            debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
+            if not v or childV < v:
+                v = childV
+                a = action
+            if not alpha or v < alpha:
+                return v, action
+            beta = min(v, beta) if beta else v
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            v = self.evaluationFunction(state)
+        return v, a
+
+    def maxValueAction(self, searchDepth, state, alpha, beta):
+        v = None
+        a = None
+        # if we've reached the max depth
+        if searchDepth == self.depth * state.getNumAgents():
+            return self.evaluationFunction(state), None
+        for action in state.getLegalActions(self.index):
+            child = state.generateSuccessor(self.index, action)
+            childV = self.minValueAction(searchDepth + 1, child, alpha, beta)[0]
+            if not v or childV > v:
+                v = childV
+                a = action
+            if not beta or v > beta:
+                return v, action
+            alpha = max(v, alpha) if alpha else v
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            v = self.evaluationFunction(state)
+        return v, a
 
     # def maxValueAction(self, searchDepth, state, alpha, beta):
     #     if searchDepth > self.depth * state.getNumAgents():
