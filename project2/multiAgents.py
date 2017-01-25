@@ -245,29 +245,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             v = self.evaluationFunction(state)
         return v, a
 
-    # def maxValueAction(self, searchDepth, state, alpha, beta):
-    #     if searchDepth > self.depth * state.getNumAgents():
-    #         return self.evaluationFunction(state), None
-    #     v = None
-    #     a = None
-    #     for action in state.getLegalActions(self.index):
-    #         child = state.generateSuccessor(self.index, action)
-    #         if not v:
-    #             v, a = self.minValueAction(searchDepth+1, child, alpha, beta)
-    #         else:
-    #             childV, childA = self.minValueAction(searchDepth+1, child, alpha, beta)
-    #             if childV > v:
-    #                 v = childV
-    #                 a = childA
-    #         if not beta or v > beta:
-    #             return v, action
-    #         alpha = max(v, alpha) if alpha else v
-    #     if not v:
-    #         v = self.evaluationFunction(state)
-    #     return v, a
-    #     
-
-
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
