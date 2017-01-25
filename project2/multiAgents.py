@@ -105,7 +105,7 @@ def debug(s):
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
-      Your minimax agent (question 2)
+      Your minimax agent (question 1)
     """
 
     def getAction(self, gameState):
@@ -184,7 +184,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
-      Your minimax agent with alpha-beta pruning (question 3)
+      Your minimax agent with alpha-beta pruning (question 2)
     """
 
     def getAction(self, gameState):
@@ -194,10 +194,32 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         if self.index == 0:
             # we're pacman
-            return self.maxValueAction(0, gameState, sys.maxint, -sys.maxint)[1]
+            return self.maxValueAction(0, gameState, -sys.maxint, sys.maxint)[1]
         else:
             # we're a ghost
-            return self.minValueValue(self.index, gameState, None, None)[1]
+            return self.minValueValue(self.index, gameState, -sys.maxint, sys.maxint)[1]
+
+    def maxValueAction(self, searchDepth, state, alpha, beta):
+        v = None
+        a = None
+        # if we've reached the max depth
+        if searchDepth == self.depth * state.getNumAgents():
+            return self.evaluationFunction(state), None
+        for action in state.getLegalActions(self.index):
+            child = state.generateSuccessor(self.index, action)
+            childV = self.minValueAction(searchDepth + 1, child, alpha, beta)[0]
+            # set v to the max of v and childV
+            if not v or childV > v:
+                v = childV
+                a = action
+            # prune of v>beta
+            if not beta or v > beta:
+                return v, action
+            alpha = max(v, alpha) if alpha else v
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            v = self.evaluationFunction(state)
+        return v, a
 
     def minValueAction(self, searchDepth, state, alpha, beta):
         func = self.maxValueAction if searchDepth - 1 % state.getNumAgents() == 0 else self.minValueAction
@@ -210,32 +232,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             child = state.generateSuccessor(self.index, action)
             childV = func(searchDepth + 1, child, alpha, beta)[0]
             debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
+            # set v to the min of v and childV
             if not v or childV < v:
                 v = childV
                 a = action
+            # prune if v<alpha
             if not alpha or v < alpha:
                 return v, action
             beta = min(v, beta) if beta else v
-        # if we're at a leaf
-        if len(state.getLegalActions()) == 0:
-            v = self.evaluationFunction(state)
-        return v, a
-
-    def maxValueAction(self, searchDepth, state, alpha, beta):
-        v = None
-        a = None
-        # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents():
-            return self.evaluationFunction(state), None
-        for action in state.getLegalActions(self.index):
-            child = state.generateSuccessor(self.index, action)
-            childV = self.minValueAction(searchDepth + 1, child, alpha, beta)[0]
-            if not v or childV > v:
-                v = childV
-                a = action
-            if not beta or v > beta:
-                return v, action
-            alpha = max(v, alpha) if alpha else v
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
