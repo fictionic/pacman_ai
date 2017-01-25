@@ -129,7 +129,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             # we're pacman
             return self.maxValueAction(0, gameState)[1]
         else:
-            # we're a ghost
+            # we're a ghost (shouldn't be called)
             return self.minValueValue(self.index, gameState)[1]
 
     def minValueAction(self, searchDepth, state):
@@ -196,7 +196,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             # we're pacman
             return self.maxValueAction(0, gameState, -sys.maxint, sys.maxint)[1]
         else:
-            # we're a ghost
+            # we're a ghost (shouldn't be called)
             return self.minValueValue(self.index, gameState, -sys.maxint, sys.maxint)[1]
 
     def maxValueAction(self, searchDepth, state, alpha, beta):
@@ -231,12 +231,12 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         for action in state.getLegalActions(self.index):
             child = state.generateSuccessor(self.index, action)
             childV = func(searchDepth + 1, child, alpha, beta)[0]
-            debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
             # set v to the min of v and childV
             if not v or childV < v:
                 v = childV
                 a = action
             # prune if v<alpha
+            # TODO: check if the parent is a min or max node...
             if not alpha or v < alpha:
                 return v, action
             beta = min(v, beta) if beta else v
