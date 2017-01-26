@@ -139,6 +139,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # if we've reached the max depth
         if searchDepth == self.depth * state.getNumAgents():
             return self.evaluationFunction(state), None
+        if state.isLose() or state.isWin():
+            return state.getScore(), None
         vs = []
         debug('\t' * searchDepth + "min")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
@@ -168,6 +170,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # if we've reached the max depth
         if searchDepth == self.depth * state.getNumAgents():
             return self.evaluationFunction(state), None
+        if state.isLose() or state.isWin():
+            return state.getScore(), None
         debug('\t' * searchDepth + "max")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
         for action in state.getLegalActions(self.index):
@@ -208,6 +212,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # if we've reached the max depth
         if searchDepth == self.depth * state.getNumAgents():
             return self.evaluationFunction(state), None
+
         for action in state.getLegalActions(self.index):
             child = state.generateSuccessor(self.index, action)
             childV = self.minValueAction(searchDepth + 1, child, alpha, beta)[0]
@@ -225,7 +230,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return v, a
 
     def minValueAction(self, searchDepth, state, alpha, beta):
-        func = self.maxValueAction if searchDepth - 1 % state.getNumAgents() == 0 else self.minValueAction
+        func = self.maxValueAction if (searchDepth - 1) % state.getNumAgents() == 0 else self.minValueAction
         v = None
         a = None
         # if we've reached the max depth
