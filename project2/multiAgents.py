@@ -137,10 +137,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         v = None
         a = None
         # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents():
+        if searchDepth == self.depth * state.getNumAgents() or state.isLose() or state.isWin():
             return self.evaluationFunction(state), None
-        if state.isLose() or state.isWin():
-            return state.getScore(), None
         vs = []
         debug('\t' * searchDepth + "min")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
@@ -168,10 +166,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         a = None
         vs = []
         # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents():
+        if searchDepth == self.depth * state.getNumAgents() or state.isLose() or state.isWin():
             return self.evaluationFunction(state), None
-        if state.isLose() or state.isWin():
-            return state.getScore(), None
         debug('\t' * searchDepth + "max")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
         for action in state.getLegalActions(self.index):
