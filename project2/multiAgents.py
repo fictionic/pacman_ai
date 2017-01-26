@@ -229,9 +229,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 v = childV
                 a = action
             # if the parent is pacman
-            if ghostIndex == 1:
-                if alpha is None or v < alpha:
-                    return v, action
+            if alpha is None or v < alpha:
+                return v, action
             beta = min(v, beta) if beta is not None else v
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
