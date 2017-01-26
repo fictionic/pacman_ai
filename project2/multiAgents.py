@@ -125,32 +125,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        if self.index == 0:
-            # we're pacman
-            return self.maxValueAction(0, gameState)[1]
-        else:
-            # we're a ghost (shouldn't be called)
-            return self.minValueValue(self.index, gameState)[1]
+        # we're pacman
+        return self.maxValueAction(0, 0, gameState)[1]
 
-    def minValueAction(self, searchDepth, state):
-        func = self.maxValueAction if searchDepth - 1 % state.getNumAgents() == 0 else self.minValueAction
+    def minValueAction(self, ghostIndex, curDepth, state):
+        nextDepth = None
+        if ghostIndex == state.getNumAgents() - 1:
+            func = self.maxValueAction
+            nextIndex = 0
+            nextDepth = curDepth + 1
+        else:
+            func = self.minValueAction
+            nextIndex = ghostIndex + 1
+            nextDepth = curDepth
         v = None
         a = None
-        # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents() or state.isLose() or state.isWin():
-            return self.evaluationFunction(state), None
         vs = []
+        searchDepth = curDepth + ghostIndex # for debugging
         debug('\t' * searchDepth + "min")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
-
-        ghostIndex = searchDepth % state.getNumAgents()
-
         for action in state.getLegalActions(ghostIndex):
             child = state.generateSuccessor(ghostIndex, action)
-            childV = func(searchDepth+1, child)[0]
+            childV = func(nextIndex, nextDepth, child)[0]
             vs.append(childV)
             debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
-            if not v or childV < v:
+            if v is None or childV < v:
                 v = childV
                 a = action
         debug('\t' * searchDepth + 'depth: ' + str(searchDepth))
@@ -161,19 +160,22 @@ class MinimaxAgent(MultiAgentSearchAgent):
             v = self.evaluationFunction(state)
         return v, a
         
-    def maxValueAction(self, searchDepth, state):
+    def maxValueAction(self, pacmanIndex, curDepth, state):
         v = None
         a = None
         vs = []
-        # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents() or state.isLose() or state.isWin():
+        # if we've reached the max depth, or if we're at a terminal state
+        if curDepth == self.depth or state.isLose() or state.isWin():
             return self.evaluationFunction(state), None
+        nextGhostIndex = 1
+        nextDepth = curDepth
+        searchDepth = curDepth # for debugging
         debug('\t' * searchDepth + "max")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
-        for action in state.getLegalActions(self.index):
-            child = state.generateSuccessor(self.index, action)
-            childV = self.minValueAction(searchDepth+1, child)[0]
-            if not v or childV > v:
+        for action in state.getLegalActions(pacmanIndex):
+            child = state.generateSuccessor(pacmanIndex, action)
+            childV = self.minValueAction(nextGhostIndex, nextDepth, child)[0]
+            if v is None or childV > v:
                 v = childV
                 a = action
             vs.append(childV)
