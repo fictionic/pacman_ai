@@ -142,8 +142,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         vs = []
         debug('\t' * searchDepth + "min")
         debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
-        for action in state.getLegalActions(self.index):
-            child = state.generateSuccessor(self.index, action)
+
+        ghostIndex = searchDepth % state.getNumAgents()
+
+        for action in state.getLegalActions(ghostIndex):
+            child = state.generateSuccessor(ghostIndex, action)
             childV = func(searchDepth+1, child)[0]
             vs.append(childV)
             debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
@@ -228,9 +231,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # if we've reached the max depth
         if searchDepth == self.depth * state.getNumAgents():
             return self.evaluationFunction(state), None
-        for action in state.getLegalActions(self.index):
-            child = state.generateSuccessor(self.index, action)
-            childV = func(searchDepth + 1, child, alpha, beta)[0]
+
+        ghostIndex = searchDepth % state.getNumAgents()
+
+        for action in state.getLegalActions(ghostIndex):
+            child = state.generateSuccessor(ghostIndex, action)
+
+            if searchDepth == self.depth * state.getNumAgents() - 1:
+                childV = self.evaluationFunction(child)
+            else:
+                childV = func(searchDepth + 1, child, alpha, beta)[0]
             # set v to the min of v and childV
             if not v or childV < v:
                 v = childV
