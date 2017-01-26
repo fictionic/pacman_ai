@@ -184,62 +184,55 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
 
-        if self.index == 0:
-            # we're pacman
-            return self.maxValueAction(0, gameState, -sys.maxint, sys.maxint)[1]
-        else:
-            # we're a ghost (shouldn't be called)
-            return self.minValueValue(self.index, gameState, -sys.maxint, sys.maxint)[1]
+        # we're pacman
+        return self.maxValueAction(0, 0, gameState, -sys.maxint, sys.maxint)[1]
 
-    def maxValueAction(self, searchDepth, state, alpha, beta):
+    def maxValueAction(self, pacmanIndex, curDepth, state, alpha, beta):
         v = None
         a = None
-        # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents():
+        # if we've reached the max depth, or if we're at a terminal state
+        if curDepth == self.depth or state.isLose() or state.isWin():
             return self.evaluationFunction(state), None
-
-        for action in state.getLegalActions(self.index):
-            child = state.generateSuccessor(self.index, action)
-            childV = self.minValueAction(searchDepth + 1, child, alpha, beta)[0]
-            # set v to the max of v and childV
-            if not v or childV > v:
+        nextGhostIndex = 1
+        nextDepth = curDepth
+        for action in state.getLegalActions(pacmanIndex):
+            child = state.generateSuccessor(pacmanIndex, action)
+            childV = self.minValueAction(nextGhostIndex, nextDepth, child, alpha, beta)[0]
+            if v is None or childV > v:
                 v = childV
                 a = action
             # prune of v>beta
-            if not beta or v > beta:
+            if beta is None or v > beta:
                 return v, action
-            alpha = max(v, alpha) if alpha else v
+            alpha = max(v, alpha) if alpha is not None else v
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
         return v, a
 
-    def minValueAction(self, searchDepth, state, alpha, beta):
-        func = self.maxValueAction if (searchDepth - 1) % state.getNumAgents() == 0 else self.minValueAction
+    def minValueAction(self, ghostIndex, curDepth, state, alpha, beta):
+        nextDepth = None
+        if ghostIndex == state.getNumAgents() - 1:
+            func = self.maxValueAction
+            nextIndex = 0
+            nextDepth = curDepth + 1
+        else:
+            func = self.minValueAction
+            nextIndex = ghostIndex + 1
+            nextDepth = curDepth
         v = None
         a = None
-        # if we've reached the max depth
-        if searchDepth == self.depth * state.getNumAgents():
-            return self.evaluationFunction(state), None
-
-        ghostIndex = searchDepth % state.getNumAgents()
-
         for action in state.getLegalActions(ghostIndex):
             child = state.generateSuccessor(ghostIndex, action)
-
-            if searchDepth == self.depth * state.getNumAgents() - 1:
-                childV = self.evaluationFunction(child)
-            else:
-                childV = func(searchDepth + 1, child, alpha, beta)[0]
-            # set v to the min of v and childV
-            if not v or childV < v:
+            childV = func(nextIndex, nextDepth, child, alpha, beta)[0]
+            if v is None or childV < v:
                 v = childV
                 a = action
-            # prune if v<alpha
-            # TODO: check if the parent is a min or max node...
-            if not alpha or v < alpha:
-                return v, action
-            beta = min(v, beta) if beta else v
+            # if the parent is pacman
+            if ghostIndex == 1:
+                if alpha is None or v < alpha:
+                    return v, action
+            beta = min(v, beta) if beta is not None else v
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
