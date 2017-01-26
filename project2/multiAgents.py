@@ -129,6 +129,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return self.maxValueAction(0, 0, gameState)[1]
 
     def minValueAction(self, ghostIndex, curDepth, state):
+        # if we're at a terminal state
+        if state.isLose() or state.isWin():
+            return self.evaluationFunction(state), None
         nextDepth = None
         if ghostIndex == state.getNumAgents() - 1:
             func = self.maxValueAction
@@ -139,36 +142,30 @@ class MinimaxAgent(MultiAgentSearchAgent):
             nextIndex = ghostIndex + 1
             nextDepth = curDepth
         v = None
-        a = None
-        vs = []
         for action in state.getLegalActions(ghostIndex):
             child = state.generateSuccessor(ghostIndex, action)
             childV = func(nextIndex, nextDepth, child)[0]
-            vs.append(childV)
             if v is None or childV < v:
                 v = childV
-                a = action
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
-        return v, a
+        return v, None
         
     def maxValueAction(self, pacmanIndex, curDepth, state):
         v = None
         a = None
-        vs = []
         # if we've reached the max depth, or if we're at a terminal state
         if curDepth == self.depth or state.isLose() or state.isWin():
             return self.evaluationFunction(state), None
-        nextGhostIndex = 1
+        nextIndex = 1
         nextDepth = curDepth
         for action in state.getLegalActions(pacmanIndex):
             child = state.generateSuccessor(pacmanIndex, action)
-            childV = self.minValueAction(nextGhostIndex, nextDepth, child)[0]
+            childV = self.minValueAction(nextIndex, nextDepth, child)[0]
             if v is None or childV > v:
                 v = childV
                 a = action
-            vs.append(childV)
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
@@ -188,16 +185,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return self.maxValueAction(0, 0, gameState, -sys.maxint, sys.maxint)[1]
 
     def maxValueAction(self, pacmanIndex, curDepth, state, alpha, beta):
-        v = None
-        a = None
         # if we've reached the max depth, or if we're at a terminal state
         if curDepth == self.depth or state.isLose() or state.isWin():
             return self.evaluationFunction(state), None
-        nextGhostIndex = 1
+        v = None
+        a = None
+        nextIndex = 1
         nextDepth = curDepth
         for action in state.getLegalActions(pacmanIndex):
             child = state.generateSuccessor(pacmanIndex, action)
-            childV = self.minValueAction(nextGhostIndex, nextDepth, child, alpha, beta)[0]
+            childV = self.minValueAction(nextIndex, nextDepth, child, alpha, beta)[0]
             if v is None or childV > v:
                 v = childV
                 a = action
@@ -211,6 +208,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return v, a
 
     def minValueAction(self, ghostIndex, curDepth, state, alpha, beta):
+        # if we're at a terminal state
+        if state.isLose() or state.isWin():
+            return self.evaluationFunction(state), None
         nextDepth = None
         if ghostIndex == state.getNumAgents() - 1:
             func = self.maxValueAction
@@ -221,13 +221,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             nextIndex = ghostIndex + 1
             nextDepth = curDepth
         v = None
-        a = None
         for action in state.getLegalActions(ghostIndex):
             child = state.generateSuccessor(ghostIndex, action)
             childV = func(nextIndex, nextDepth, child, alpha, beta)[0]
             if v is None or childV < v:
                 v = childV
-                a = action
             # if the parent is pacman
             if alpha is None or v < alpha:
                 return v, action
@@ -235,7 +233,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
-        return v, a
+        return v, None
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -250,8 +248,51 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.maxValueAction(0, 0, gameState)[1]
+        
+    def maxValueAction(self, pacmanIndex, curDepth, state):
+        # if we've reached the max depth, or if we're at a terminal state
+        if curDepth == self.depth or state.isLose() or state.isWin():
+            return self.evaluationFunction(state), None
+        v = None
+        a = None
+        nextIndex = 1
+        nextDepth = curDepth
+        for action in state.getLegalActions(pacmanIndex):
+            child = state.generateSuccessor(pacmanIndex, action)
+            childV = self.chanceValueAction(nextIndex, nextDepth, child)[0]
+            if v is None or childV > v:
+                v = childV
+                a = action
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            v = self.evaluationFunction(state)
+        return v, a
+        
+    def chanceValueAction(self, ghostIndex, curDepth, state):
+        # if we've reached the max depth, or if we're at a terminal state
+        if state.isLose() or state.isWin():
+            return self.evaluationFunction(state), None
+        nextDepth = None
+        if ghostIndex == state.getNumAgents() - 1:
+            func = self.maxValueAction
+            nextIndex = 0
+            nextDepth = curDepth + 1
+        else:
+            func = self.chanceValueAction
+            nextIndex = ghostIndex + 1
+            nextDepth = curDepth
+        numLegalActions = len(state.getLegalActions(ghostIndex))
+        expectedV = 0.0
+        for action in state.getLegalActions(ghostIndex):
+            child = state.generateSuccessor(ghostIndex, action)
+            childV = func(nextIndex, nextDepth, child)[0]
+            expectedV += childV
+        # if we're at a leaf
+        if len(state.getLegalActions()) == 0:
+            expectedV = self.evaluationFunction(state)
+        expectedV /= numLegalActions
+        return expectedV, None
 
 def betterEvaluationFunction(currentGameState):
     """
