@@ -141,20 +141,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
         v = None
         a = None
         vs = []
-        searchDepth = curDepth + ghostIndex # for debugging
-        debug('\t' * searchDepth + "min")
-        debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
         for action in state.getLegalActions(ghostIndex):
             child = state.generateSuccessor(ghostIndex, action)
             childV = func(nextIndex, nextDepth, child)[0]
             vs.append(childV)
-            debug('\t' * searchDepth + "child: " + str(action) + " " + str(childV))
             if v is None or childV < v:
                 v = childV
                 a = action
-        debug('\t' * searchDepth + 'depth: ' + str(searchDepth))
-        debug('\t' * searchDepth +'vs: ' + str(vs))
-        debug('\t' * searchDepth +'v: ' + str(v))
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
@@ -169,9 +162,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(state), None
         nextGhostIndex = 1
         nextDepth = curDepth
-        searchDepth = curDepth # for debugging
-        debug('\t' * searchDepth + "max")
-        debug('\t' * searchDepth + str(state.getLegalActions(self.index)))
         for action in state.getLegalActions(pacmanIndex):
             child = state.generateSuccessor(pacmanIndex, action)
             childV = self.minValueAction(nextGhostIndex, nextDepth, child)[0]
@@ -179,9 +169,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 v = childV
                 a = action
             vs.append(childV)
-        debug('\t' * searchDepth +'depth: ' + str(searchDepth))
-        debug('\t' * searchDepth +'vs: ' + str(vs))
-        debug('\t' * searchDepth +'v: ' + str(v))
         # if we're at a leaf
         if len(state.getLegalActions()) == 0:
             v = self.evaluationFunction(state)
