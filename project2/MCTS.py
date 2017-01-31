@@ -52,21 +52,31 @@ class Node(object):
         to the win percentage for the player at this node (accounting for draws as in 
         the project description).
         """
-        return value
+        return self.value
 
     def updateValue(self, outcome):
         """Updates the value estimate for the node's state.
         outcome: +1 for 1st player win, -1 for 2nd player win, 0 for draw."""
-        "*** YOUR CODE HERE ***"
-        # NOTE: which outcome is preferred depends on self.state.turn()
-        raise NotImplementedError("You must implement this method")
+        self.value = (self.value * self.visits + outcome) / (self.visits + 1)
 
     def UCBWeight(self):
         """Weight from the UCB formula used by parent to select a child.
         This node will be selected by parent with probability proportional
         to its weight."""
-        "*** YOUR CODE HERE ***"
-        raise NotImplementedError("You must implement this method")
+        return self.value + UCB_CONST * math.sqrt(math.log(self.parent.visits)/self.visits)
+
+def selectMove(node):
+    for move in node.state.getMoves():
+        if move not in node.children:
+            return move
+    retNode = None
+    retValue = None
+    for move in node.children:
+        childNode = node.children[move] 
+        if retValue is None or childNode.value > retValue:
+            retValue = childNode.value
+            retNode = childNode
+    return selectMove(retNode)
 
 def MCTS(root, rollouts):
     """Select a move by Monte Carlo tree search.
@@ -83,10 +93,32 @@ def MCTS(root, rollouts):
     Return:
         The legal move from node.state with the highest value estimate
     """
-    "*** YOUR CODE HERE ***"
-    # NOTE: you will need several helper functions
-    return randomMove(root) # Replace this line with a correct implementation
-
+    for i in range(rollouts):
+        # select
+        move = selectMove(root)
+        # expand
+        node.addMove(move)
+        # simulate
+        curState = node.state
+        while not curState.isTerminal():
+            curState = curState.getMoves()[random.choice(curState.getMoves())]
+        outcome = curState.value
+        # backpropagate
+        while node is not root:
+            node.updateValue(value)
+            node.visits += 1
+            node = node.parent
+        node.updateValue(value)
+        node.visits += 1
+        node = node.parent
+    # return move with max ucb weight
+    maxWeight = maxMove = None
+    for move in root.children:
+        weight = root.children[move].getValue()
+        if maxWeight is None or weight > maxWeight:
+            maxWeight = weight
+            maxMove = move
+    return maxMove
 
 def parse_args():
     """
