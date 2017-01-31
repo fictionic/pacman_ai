@@ -294,6 +294,73 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         expectedV /= numLegalActions
         return expectedV, None
 
+#### helper things for evaluationFunction
+
+def getNearestGhost(gameState):
+    curPos = gameState.getPacmanPosition()
+    ghostDist = None
+    closestIndex = None
+    for ghostIndex in xrange(gameState.getNumAgents()):
+        if ghostIndex == 0:
+            continue
+        ghostPos = gameState.getGhostPosition(ghostIndex)
+        dist = manhattanDistance(ghostPos, curPos)
+        if ghostDist is None or dist < ghostDist:
+            ghostDist = dist
+            closestIndex = ghostIndex
+    return closestIndex
+
+class Feature:
+    def __init__(self, weight, valueFn):
+        self.weight = weight
+        self.valueFn = valueFn
+
+features = []
+# number of foods left
+weight = 50
+def fn(gameState):
+    numFood = gameState.getNumFood()
+    if numFood == 0:
+        return 500
+    return 1.0/numFood**2
+feature = Feature(weight, fn)
+features.append(feature)
+# manhattan distance to nearest capsule 
+weight = 1
+def fn(gameState):
+    ret = None
+    curPos = gameState.getPacmanPosition()
+    for capsule in gameState.getCapsules():
+        dist = manhattanDistance(capsule, curPos)
+        if ret is None or dist < ret:
+            ret = dist
+    if ret is None:
+        return 0
+    return 1.0/ret
+feature = Feature(weight, fn)
+features.append(feature)
+# if nearest ghost is scared: distance to scared ghost;
+# else negative distance to nearest ghost
+weight = 20
+def fn(gameState):
+    ghostDist = None
+    ghostIndex = getNearestGhost(gameState)
+    if ghostIndex is None:
+        return 0
+    ghostState = gameState.getGhostState(ghostIndex)
+    ghost = gameState.getGhostPosition(ghostIndex)
+    curPos = gameState.getPacmanPosition()
+    dist = manhattanDistance(ghost, curPos)
+    if dist == 0:
+        return -200
+    ret = 1.0/dist
+    if ghostState.scaredTimer > 0:
+        return ret
+    else:
+        return -ret
+feature = Feature(weight, fn)
+features.append(feature)
+
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -301,8 +368,10 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    ret = 0
+    for feature in features:
+        ret += feature.weight * feature.valueFn(currentGameState)
+    return ret
 
 # Abbreviation
 better = betterEvaluationFunction
