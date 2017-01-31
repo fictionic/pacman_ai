@@ -390,7 +390,7 @@ def fn(gameState):
     nearestAngryGhost = getNearestAngryGhost(gameState)
     if nearestAngryGhost is None:
         return 0
-    return nearestAngryGhost/gameState.getNumFood()
+    return 1/numFood
 feature = Feature(weight, fn)
 features.append(feature)
 
