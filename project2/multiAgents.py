@@ -391,11 +391,9 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: We have a series of features with given weights that are
       applied to every state when determining value. These features include
-      the number of food left, the distance to the closest capsule, the distance
+      the number of food left, the distance to the closest capsule and the distance
       to the nearest ghost (positive or negative value based on whether it is scared
-      or not scared), and a weighted food score that returns a similar value to
-      the number of food unless the nearest ghost isn't scared. These are weighted
-      with values 50, 1, 20, and 50, respectively.
+      or not scared). These are weighted with values 50, 1, and 8, respectively.
     """
     ret = 0
     for feature in features:
