@@ -310,6 +310,24 @@ def getNearestGhost(gameState):
             closestIndex = ghostIndex
     return closestIndex
 
+def getNearestAngryGhost(gameState):
+    curPos = gameState.getPacmanPosition()
+    ghostDist = None
+    closestIndex = None
+    for ghostIndex in xrange(gameState.getNumAgents()):
+        if ghostIndex == 0:
+            continue
+        ghostState = gameState.getGhostState(ghostIndex)
+        # skip all of the scared ghosts for this
+        if ghostState.scaredTimer > 0:
+            continue
+        ghostPos = gameState.getGhostPosition(ghostIndex)
+        dist = manhattanDistance(ghostPos, curPos)
+        if ghostDist is None or dist < ghostDist:
+            ghostDist = dist
+            closestIndex = ghostIndex
+    return closestIndex
+
 class Feature:
     def __init__(self, weight, valueFn):
         self.weight = weight
@@ -325,8 +343,9 @@ def fn(gameState):
     return 1.0/numFood**2
 feature = Feature(weight, fn)
 features.append(feature)
+
 # manhattan distance to nearest capsule 
-weight = 1
+weight = 0
 def fn(gameState):
     ret = None
     curPos = gameState.getPacmanPosition()
@@ -353,11 +372,24 @@ def fn(gameState):
     dist = manhattanDistance(ghost, curPos)
     if dist == 0:
         return -200
-    ret = 1.0/dist
+    ret = 1.0/(dist**2)
     if ghostState.scaredTimer > 0:
         return ret
     else:
         return -ret
+feature = Feature(weight, fn)
+features.append(feature)
+
+# weight of food based on nearest not scared ghost
+weight = 0
+def fn(gameState):
+    numFood = gameState.getNumFood()
+    if numFood == 0:
+        return 500
+    nearestAngryGhost = getNearestAngryGhost(gameState)
+    if nearestAngryGhost is None:
+        return 0
+    return nearestAngryGhost/gameState.getNumFood()
 feature = Feature(weight, fn)
 features.append(feature)
 
