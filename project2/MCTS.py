@@ -78,6 +78,10 @@ def selectMove(node):
             retNode = childNode
     return selectMove(retNode)
 
+def expandNode(node, move):
+    node.addMove(move)
+    return node.children[move]
+
 def MCTS(root, rollouts):
     """Select a move by Monte Carlo tree search.
     Plays rollouts random games from the root node to a terminal state.
@@ -97,27 +101,30 @@ def MCTS(root, rollouts):
         # select
         move = selectMove(root)
         # expand
-        node.addMove(move)
+        node = expandNode(root, move)
         # simulate
         curState = node.state
         while not curState.isTerminal():
-            curState = curState.getMoves()[random.choice(curState.getMoves())]
-        outcome = curState.value
+            curState = curState.nextState(random.choice(curState.getMoves()))
+        outcome = curState.value()
         # backpropagate
         while node is not root:
-            node.updateValue(value)
+            node.updateValue(outcome)
             node.visits += 1
             node = node.parent
-        node.updateValue(value)
+        node.updateValue(outcome)
         node.visits += 1
         node = node.parent
     # return move with max ucb weight
     maxWeight = maxMove = None
     for move in root.children:
-        weight = root.children[move].getValue()
+        child = root.children[move]
+        weight = child.value
         if maxWeight is None or weight > maxWeight:
             maxWeight = weight
             maxMove = move
+    if maxMove is None:
+        return random.choice(root.state.getMoves())
     return maxMove
 
 def parse_args():
