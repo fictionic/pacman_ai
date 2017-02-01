@@ -11,6 +11,8 @@ import random
 import argparse
 import game1
 
+import numpy
+
 # You will want to use this import in your code
 import math
 
@@ -32,7 +34,7 @@ class Node(object):
         self.parent = parent_node
         self.children = {} # maps moves (keys) to Nodes (values); if you use it differently, you must also change addMove
         self.visits = 0
-        self.value = float("nan")
+        self.value = None
         # Note: you may add additional fields if needed
         
     def addMove(self, move):
@@ -57,27 +59,46 @@ class Node(object):
     def updateValue(self, outcome):
         """Updates the value estimate for the node's state.
         outcome: +1 for 1st player win, -1 for 2nd player win, 0 for draw."""
-        self.value = (self.value * self.visits + outcome) / (self.visits + 1)
+        if outcome == 0:
+            outcome = .5
+        elif outcome == 1:
+            if self.state.turn == 1:
+                outcome = 1
+            else:
+                outcome = 0
+        else:
+            if self.state.turn == -1:
+                outcome = 1
+            else:
+                outcome = 0
+        if self.value is None:
+            self.value = outcome
+        else:
+            self.value = (self.value * self.visits + outcome) / (self.visits + 1)
 
     def UCBWeight(self):
         """Weight from the UCB formula used by parent to select a child.
         This node will be selected by parent with probability proportional
         to its weight."""
-        return self.value + UCB_CONST * math.sqrt(math.log(self.parent.visits)/self.visits)
+        ret = self.value + UCB_CONST * math.sqrt(math.log(self.parent.visits)/self.visits)
+        return ret
 
-def selectMove(node):
+def selectAndExpand(node):
     for move in node.state.getMoves():
-        if move not in node.children:
-            return move
-    retNode = None
-    retValue = None
-    for move in node.children:
-        childNode = node.children[move] 
-        if retValue is None or childNode.value > retValue:
-            retValue = childNode.value
-            retNode = childNode
-    return selectMove(retNode)
-
+        if node.addMove(move):
+            return node.children[move] # will be added by addMove
+    # TODO: finish writing this
+    weights = []
+    children = list(node.children.values())
+    for child in children:
+        weights.append(child.UCBWeight())
+    else:
+        return None
+    weights = map(lambda x: x/sum(weights), weights)
+    ret = selectMove(numpy.random.choice(children, p=weights))
+    if ret is None:
+        return node
+# TODO: combine above w/ below
 def expandNode(node, move):
     node.addMove(move)
     return node.children[move]
@@ -108,13 +129,10 @@ def MCTS(root, rollouts):
             curState = curState.nextState(random.choice(curState.getMoves()))
         outcome = curState.value()
         # backpropagate
-        while node is not root:
+        while node is not None:
             node.updateValue(outcome)
             node.visits += 1
             node = node.parent
-        node.updateValue(outcome)
-        node.visits += 1
-        node = node.parent
     # return move with max ucb weight
     maxWeight = maxMove = None
     for move in root.children:
