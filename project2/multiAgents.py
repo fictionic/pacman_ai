@@ -335,7 +335,7 @@ class Feature:
 
 features = []
 # number of foods left
-weight = 50
+weight = 70
 def fn(gameState):
     numFood = gameState.getNumFood()
     if numFood == 0:
