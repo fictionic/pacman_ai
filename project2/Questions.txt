@@ -13,11 +13,11 @@ Player 1 won 14/15 games.
 
 4) Repeat (4), except now make MCTS player 2. How many games does player 1 win? (If your answers to (4) and (5) don't make sense to you based on which player should be the smarter player, you probably have an error in your implementation.)
 
-Player 1 only won 4/15 games.
+Player 1 only won 1/15 games (with his --rollouts set to 0).
 
 5) Experiment with several values of the UCB exploration constant. Report what values you used and your results for how this affects your MCTS agent's effectiveness. Explain your hypotheses about why you see these results, tying back to what you know about how varying this constant affects the algorithm. Your experimentation should be sufficiently extensive to explore at least some trend in the results.
 
-We tried a number of values from .0001 to 100. With a high number of rollouts (50), there wasn't a huge difference between the values, however when there were fewer rollouts, such as 5 or 10, the lowest values did much better than the higher values (.5 or larger). This is because when we aren't exploring a ton of options, it really pays to chase after those ones that do better, whereas when we're expanding the tree to almost depth 2, it's similar to running expectimax with depth 2.
+We tried a number of values from .0001 to 100. With a high number of rollouts (50), there wasn't a huge difference between the values, however when there were fewer rollouts, such as 5 or 10, the lowest UCB values did much better than the higher values (.5 or larger). This is because when you only have a few opportunities to increase our estimates of a given option, it makes the most sense to get as good an estimate as possible for just a couple nodes, so we can be confident in one choice. But when we can get better estimates of many nodes, it pays to try a bunch of options, since it starts becoming a more accurate approximation of minimax.
 
 6) Change the UCB exploration constant back to its original value (.5) and experiment with two MCTS players with different numbers of rollouts relative to one another. For example, you might look at an agent with 10 rollouts and an agent with 20 rollouts, and then look at an agent with 20 rollouts versus an agent with 40 rollouts. As in (6) report what values you used and your results. Explain your hypotheses about why you see these results, tying back to what you know about the algorithm. Your experimentation should be sufficiently extensive to explore at least some trend in the results.
 

@@ -86,7 +86,7 @@ class Node(object):
 
 def selectAndExpand(node):
     # if we're at a terminal state, return that node
-    if len(node.state.getMoves()) == 0:
+    if node.state.isTerminal():
         return node
 
     # first check if any of the children of the node are unexplored
@@ -97,17 +97,16 @@ def selectAndExpand(node):
 
     # if all the children are explored, pick one to expand based on
     # a weighted probability: child value+sqrt(log(parent visits)/child visits)
-    # TODO: finish writing this
     weights = []
     children = list(node.children.values())
     for child in children:
         weights.append(child.UCBWeight())
-    # error checking. If all the UCB weights are 0, we select at random
-    if sum(weights) == 0:
-        weights = map(lambda x: 1.0/len(weights), weights)
+    weightSum = sum(weights)
+    if weightSum == 0: # error checking. If all the UCB weights are 0, we select at random
+        return selectAndExpand(numpy.random.choice(children))
     else:
-        weights = map(lambda x: x/sum(weights), weights)
-    return selectAndExpand(numpy.random.choice(children, p=weights))
+        weights = map(lambda x: x/weightSum, weights)
+        return selectAndExpand(numpy.random.choice(children, p=weights))
 
 def MCTS(root, rollouts):
     """Select a move by Monte Carlo tree search.
