@@ -80,28 +80,34 @@ class Node(object):
         """Weight from the UCB formula used by parent to select a child.
         This node will be selected by parent with probability proportional
         to its weight."""
+        global UCB_CONST
         ret = self.value + UCB_CONST * math.sqrt(math.log(self.parent.visits)/self.visits)
         return ret
 
 def selectAndExpand(node):
+    # if we're at a terminal state, return that node
+    if len(node.state.getMoves()) == 0:
+        return node
+
+    # first check if any of the children of the node are unexplored
+    # if so, pick one and expand it, then return that node
     for move in node.state.getMoves():
         if node.addMove(move):
-            return node.children[move] # will be added by addMove
+            return node.children[move]  #will be added by addMove
+
+    # if all the children are explored, pick one to expand based on
+    # a weighted probability: child value+sqrt(log(parent visits)/child visits)
     # TODO: finish writing this
     weights = []
     children = list(node.children.values())
     for child in children:
         weights.append(child.UCBWeight())
+    # error checking. If all the UCB weights are 0, we select at random
+    if sum(weights) == 0:
+        weights = map(lambda x: 1.0/len(weights), weights)
     else:
-        return None
-    weights = map(lambda x: x/sum(weights), weights)
-    ret = selectMove(numpy.random.choice(children, p=weights))
-    if ret is None:
-        return node
-# TODO: combine above w/ below
-def expandNode(node, move):
-    node.addMove(move)
-    return node.children[move]
+        weights = map(lambda x: x/sum(weights), weights)
+    return selectAndExpand(numpy.random.choice(children, p=weights))
 
 def MCTS(root, rollouts):
     """Select a move by Monte Carlo tree search.
@@ -119,10 +125,8 @@ def MCTS(root, rollouts):
         The legal move from node.state with the highest value estimate
     """
     for i in range(rollouts):
-        # select
-        move = selectMove(root)
-        # expand
-        node = expandNode(root, move)
+        # select and expand
+        node = selectAndExpand(root)
         # simulate
         curState = node.state
         while not curState.isTerminal():
@@ -166,6 +170,7 @@ def parse_args():
     args = p.parse_args()
     if args.displayBoard:
         DISPLAY_BOARDS = True
+    global UCB_CONST
     UCB_CONST = args.ucbConst
     return args
 

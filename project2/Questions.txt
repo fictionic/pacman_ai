@@ -8,18 +8,17 @@ We have a series of features with given weights that are applied to every state 
 
 
 3) MCTS: Run your algorithm for 15 games with rollouts set to 75. This may take a little time, but not more than a minute or two. How many games does player 1 win? 
-12
 
+Player 1 won 14/15 games.
 
 4) Repeat (4), except now make MCTS player 2. How many games does player 1 win? (If your answers to (4) and (5) don't make sense to you based on which player should be the smarter player, you probably have an error in your implementation.)
-1
 
+Player 1 only won 4/15 games.
 
 5) Experiment with several values of the UCB exploration constant. Report what values you used and your results for how this affects your MCTS agent's effectiveness. Explain your hypotheses about why you see these results, tying back to what you know about how varying this constant affects the algorithm. Your experimentation should be sufficiently extensive to explore at least some trend in the results.
 
->>> we tried tons of values (-100 to 100) with no discernible difference. even changing --rollouts didn't change anything, except making it 0. wondering if this is a problem with our alg
-
+We tried a number of values from .0001 to 100. With a high number of rollouts (50), there wasn't a huge difference between the values, however when there were fewer rollouts, such as 5 or 10, the lowest values did much better than the higher values (.5 or larger). This is because when we aren't exploring a ton of options, it really pays to chase after those ones that do better, whereas when we're expanding the tree to almost depth 2, it's similar to running expectimax with depth 2.
 
 6) Change the UCB exploration constant back to its original value (.5) and experiment with two MCTS players with different numbers of rollouts relative to one another. For example, you might look at an agent with 10 rollouts and an agent with 20 rollouts, and then look at an agent with 20 rollouts versus an agent with 40 rollouts. As in (6) report what values you used and your results. Explain your hypotheses about why you see these results, tying back to what you know about the algorithm. Your experimentation should be sufficiently extensive to explore at least some trend in the results.
 
->> player 1 always wins unless rollouts == 0, since he goes first.
+In the 10 vs 20 case, there isn't a whole lot of difference, the player with 20 rollouts will win 8-12 games. In the 10 vs 40 case, we observed the 40 rollout player winning 10-15 games. When we tested 20 vs 40, we found that the 40 rollout player won 9-12 games. Finally we tested 10 vs 75, and here the 75 rollout player won 12-15 games consistently. It is expected that against 10 rollouts, more rollouts will do better, as they get a bigger picture. However, when the lesser rollout player has 20 or more rollouts, the returns from getting more rollouts diminsh.
