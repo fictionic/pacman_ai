@@ -68,9 +68,9 @@ class Node(object):
                 outcome = 1
         else:
             if self.state.turn == -1:
-                outcome = 0
-            else:
                 outcome = 1
+            else:
+                outcome = 0
         if self.value is None:
             self.value = outcome
         else:
