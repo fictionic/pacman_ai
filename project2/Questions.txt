@@ -17,7 +17,7 @@ Player 1 only won 1/15 games (with his --rollouts set to 0).
 
 5) Experiment with several values of the UCB exploration constant. Report what values you used and your results for how this affects your MCTS agent's effectiveness. Explain your hypotheses about why you see these results, tying back to what you know about how varying this constant affects the algorithm. Your experimentation should be sufficiently extensive to explore at least some trend in the results.
 
-TODO
+We tested values of 0.01, .1, .5, 1, 5, 10 and found a general trend that with a small number of rollouts it doesn't really make a difference, but the smaller the ucb constant, the better with a large number of rollouts (i.e. 40). This is because when you don't explore much, you want to explore a lot, but when you are going to explore a lot of nodes anyway, you want to stay focused on the ones that will return the highest utility.
 
 6) Change the UCB exploration constant back to its original value (.5) and experiment with two MCTS players with different numbers of rollouts relative to one another. For example, you might look at an agent with 10 rollouts and an agent with 20 rollouts, and then look at an agent with 20 rollouts versus an agent with 40 rollouts. As in (6) report what values you used and your results. Explain your hypotheses about why you see these results, tying back to what you know about the algorithm. Your experimentation should be sufficiently extensive to explore at least some trend in the results.
 
