@@ -63,14 +63,14 @@ class Node(object):
             outcome = .5
         elif outcome == 1:
             if self.state.turn == 1:
-                outcome = 1
-            else:
                 outcome = 0
+            else:
+                outcome = 1
         else:
             if self.state.turn == -1:
-                outcome = 1
-            else:
                 outcome = 0
+            else:
+                outcome = 1
         if self.value is None:
             self.value = outcome
         else:
@@ -106,7 +106,8 @@ def selectAndExpand(node):
         return selectAndExpand(numpy.random.choice(children))
     else:
         weights = map(lambda x: x/weightSum, weights)
-        return selectAndExpand(numpy.random.choice(children, p=weights))
+        choice = numpy.random.choice(children, p=weights)
+        return selectAndExpand(choice)
 
 def MCTS(root, rollouts):
     """Select a move by Monte Carlo tree search.
